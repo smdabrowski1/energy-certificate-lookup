@@ -120,7 +120,7 @@ def upload_db():
         return jsonify({'error': 'No file provided'}), 400
     
     file = request.files['database']
-    db_path = 'energy_project_3.duckdb'
+    db_path = 'energy_project.duckdb'
     file.save(db_path)
     
     size_mb = os.path.getsize(db_path) / (1024 * 1024)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
         local_ip = socket.gethostbyname(hostname)
         
         print("🚀 Starting Energy Certificate API server...")
-        print("📊 Database: energy_project_3.duckdb")
+        print("📊 Database: energy_project.duckdb")
         print(f"🌐 Server running on:")
         print(f"   Local:   http://localhost:{port}")
         print(f"   Network: http://{local_ip}:{port}")

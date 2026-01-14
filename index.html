@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Certificate Lookup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        select:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Energy Certificate Lookup</h1>
+            <p class="text-gray-600">Find energy ratings for UK properties</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <!-- Postcode Input -->
+            <div class="mb-6">
+                <label for="postcode" class="block text-sm font-medium text-gray-700 mb-2">
+                    Enter Postcode
+                </label>
+                <div class="flex gap-3">
+                    <input 
+                        type="text" 
+                        id="postcode" 
+                        placeholder="e.g. DN12 2DJ"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    >
+                    <button 
+                        id="searchBtn"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium"
+                    >
+                        <span>Search</span>
+                        <div id="searchLoader" class="loader hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Address Dropdown -->
+            <div id="addressSection" class="mb-6 hidden fade-in">
+                <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                    Select Address
+                </label>
+                <select 
+                    id="address"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    disabled
+                >
+                    <option value="">Select an address...</option>
+                </select>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsSection" class="hidden fade-in">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-3">Energy Rating</h2>
+                    
+                    <!-- Current and Potential Ratings -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <!-- Current Rating -->
+                        <div>
+                            <p class="text-xs text-gray-600 mb-2">Current Rating</p>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-shrink-0">
+                                    <div id="ratingBadge" class="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shadow-lg">
+                                        -
+                                    </div>
+                                </div>
+                                <div>
+                                    <p id="ratingText" class="text-sm font-semibold text-gray-800">-</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Potential Rating -->
+                        <div>
+                            <p class="text-xs text-gray-600 mb-2">Potential Rating</p>
+                            <div class="flex items-center gap-3">
+                                <div class="flex-shrink-0">
+                                    <div id="potentialRatingBadge" class="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold text-white shadow-lg">
+                                        -
+                                    </div>
+                                </div>
+                                <div>
+                                    <p id="potentialRatingText" class="text-sm font-semibold text-gray-800">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-green-200">
+                        <p class="text-sm text-gray-600">
+                            <span class="font-medium">Address:</span> 
+                            <span id="selectedAddress">-</span>
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-medium">Postcode:</span> 
+                            <span id="selectedPostcode">-</span>
+                        </p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <span class="font-medium">Assessment Date:</span> 
+                            <span id="lodgementDate">-</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Recommendations Section -->
+            <div id="recommendationsSection" class="hidden fade-in mt-6">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Recommended Improvements</h2>
+                    
+                    <div id="recommendationsList" class="space-y-3">
+                        <!-- Recommendations will be inserted here -->
+                    </div>
+                    
+                    <div id="noRecommendations" class="hidden text-sm text-gray-600 py-4">
+                        No specific recommendations available for this property.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorSection" class="hidden fade-in">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-red-800 text-sm" id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Info Footer -->
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p>Energy Performance Certificate data lookup tool</p>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

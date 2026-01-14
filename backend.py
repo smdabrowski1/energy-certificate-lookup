@@ -111,6 +111,22 @@ def health_check():
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
+@app.route('/api/upload_db', methods=['POST'])
+def upload_db():
+    """TEMPORARY: Upload database file - REMOVE AFTER USE"""
+    import os
+    
+    if 'database' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['database']
+    db_path = 'energy_project_3.duckdb'
+    file.save(db_path)
+    
+    size_mb = os.path.getsize(db_path) / (1024 * 1024)
+    return jsonify({'success': True, 'message': f'Database uploaded ({size_mb:.2f} MB)'})
+
+
 if __name__ == '__main__':
     import os
     import socket

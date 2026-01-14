@@ -5,8 +5,18 @@ import duckdb
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
 
-# Connect to the database
-conn = duckdb.connect('energy_project.duckdb', read_only=True)
+# Don't connect immediately - wait until we need it
+conn = None
+
+def get_connection():
+    global conn
+    if conn is None:
+        try:
+            conn = duckdb.connect('energy_project.duckdb', read_only=True)
+        except Exception as e:
+            print(f"⚠️ Database not available yet: {e}")
+            conn = duckdb.connect('energy_project.duckdb', read_only=False)
+    return conn
 
 @app.route('/api/search', methods=['GET'])
 def search_addresses():
@@ -25,7 +35,7 @@ def search_addresses():
                 CAST(REGEXP_EXTRACT(Address, '^([0-9]+)', 1) AS INTEGER) NULLS LAST,
                 Address
         """
-        result = conn.execute(query, [postcode]).fetchall()
+        result = get_connection().execute(query, [postcode]).fetchall()
         addresses = [row[0] for row in result]
         
         return jsonify({
@@ -59,7 +69,7 @@ def get_rating():
             FROM certificates_deduped
             WHERE POSTCODE = ? AND ADDRESS = ?
         """
-        result = conn.execute(query, [postcode, address]).fetchone()
+        result = get_connection().execute(query, [postcode]).fetchall()
         print(f"📊 Rating result: {result}")
 
         if not result:
